@@ -1,4 +1,10 @@
 body {
+  .movie-card {
+    border: 1px, solid, #ccc;
+    padding: 1rem;
+    width: 200px;
+    text-align: center;
+  }
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
