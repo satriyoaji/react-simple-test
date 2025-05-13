@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { Movie } from './types/movie';
 import { useDebounce } from './hooks/useDebounce';
 import axios from 'axios';
 import MovieCard from './components/MovieCard'
+
+const API_KEY = '195c1d69';
 
 function App() {
   const [querySearch, setQuerySearch] = React.useState("");
@@ -16,27 +17,26 @@ function App() {
   const debouncedQuery = useDebounce(querySearch, 1000);
 
   useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      return;
-    }
-    fetchMovies(debouncedQuery)
-  })
+    if (!debouncedQuery.trim()) return;
+    fetchMovies(debouncedQuery);
+  }, [debouncedQuery]);
 
   useEffect(() => {
-    setWatchLater([])
-  }, [watchLater])
+    localStorage.setItem('watchLater', JSON.stringify(watchLater));
+  }, [watchLater]);
 
   const fetchMovies = async (searchStr: string) => { //https://www.omdbapi.com/?apikey=195c1d69&s=movie
     setLoading(true);
     setError('');
 
     try {
-      const response = await axios.get(`https://www.omdbapi.com/?apikey=195c1&s=${searchStr}`);
-      if (response.data) {
-        console.log("DATA: ", response.data)
+      const response = await axios.get(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${searchStr}`);
+      if (response.data.data) {
         const result = response.data.Search;
         setMovies(result)
-      } else {
+      } else if (response.data.Error) {
+        setError(response.data.Error);
+      }else {
         setError(response.data.Error || "No movies found");
       }
 
@@ -49,6 +49,7 @@ function App() {
 
   const toggleWatchLater = (id: string) => {
     setWatchLater((prev) => prev.includes(id) ? prev.filter((movieId) => movieId !== id) : [...prev, id]);
+  }
 
   const clearWatchLater = () => setWatchLater([]);
   const moviesToShow =  showWatch ? movies.filter((m) => watchLater.includes(m.imdbID)) : movies;
@@ -61,9 +62,9 @@ function App() {
       <div>
         <label htmlFor="">
           <input type="checkbox" checked={showWatch} onChange={() => setShowWatch(!showWatch)} />
-          Set Show watch later
+          Show watch later List
         </label>
-        <button onClick={clearWatchLater} disabled={watchLater.length === 0}>
+        <button onClick={clearWatchLater} disabled={watchLater.length === 0} style={{ marginLeft: '1rem' }}>
           Clear Watch Later
         </button>
       </div>
@@ -78,14 +79,13 @@ function App() {
             movie={movie}
             toggleWatchLater={toggleWatchLater}
             isWatchLater={watchLater.includes(movie.imdbID)}
-          >
-          </MovieCard>
+          />
 
         ))}
       </div>
 
     </div>
   );
-}}
+}
 
 export default App;
